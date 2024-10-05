@@ -1,0 +1,37 @@
+---
+- name: Install New Relic Infrastructure Agent
+  hosts: servers
+  become: yes
+  vars:
+    new_relic_license_key: "NRAK-BDF3F9WSQ5ZNYDG9JIUNOFZC210"  # Replace with your license key
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add New Relic repository
+      apt_repository:
+        repo: "deb http://apt.newrelic.com/debian/ newrelic non-free"
+        state: present
+
+    - name: Install New Relic Infrastructure agent
+      apt:
+        name: newrelic-infra
+        state: present
+
+    - name: Configure New Relic Infrastructure agent
+      copy:
+        dest: /etc/newrelic-infra.yml
+        content: |
+          license_key: {{ new_relic_license_key }}
+          log_level: info
+
+    - name: Start New Relic Infrastructure agent
+      service:
+        name: newrelic-infra
+        state: started
+        enabled: true
